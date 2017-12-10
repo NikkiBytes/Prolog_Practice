@@ -1,0 +1,2054 @@
+/* -*- Mode: Prolog -*- */
+:- module(ontol_db,
+          [
+           ontology/1,
+           ontology/2,
+           ontology/3,
+           import_directive/1,
+           import_all_ontologies/0,
+           class/1,
+           subclass/2,
+           equivalent_class/2,
+           equivalent_class_symm/2,
+           class_quad_diff/4,
+           class_quad_diff/5,
+           class_quad_flip/4,
+           class_quad_flip/5,
+           class_quad_flipT/4,
+           class_quad_flipT/5,
+           restriction/3,
+           restriction/4,
+           restriction/5,
+           gci_subclass/4,
+           gci_restriction/5,
+           cardinality_restriction/4,
+           min_cardinality_restriction/4,
+           max_cardinality_restriction/4,
+           range_cardinality_restriction/4,
+           belongs/2,
+           def_xref/2,
+           class_xref/2,
+           disjoint_from/2,
+           disjoint_fromS/2,
+           disjoint_over/2,
+           class_disjoint_union_list/2,
+           disjoint_from_violation/3,
+           disjoint_from_violation_nr/3,
+           disjoint_over_violation/4,
+           relation/1,
+           property/1,
+           property_domain/2,
+           property_range/2,
+           complement_of/2,
+           holds_temporally_between/3,
+           holds_atemporally_between/3,
+           lexical_category/2,
+           is_unsatisfiable/1,
+           is_anonymous/1,
+           inverse_of/2,
+           inverse_of_on_instance_level/2,
+           class_level_inverse_of/2,
+           holds_bidirectionally_for/2,
+           holds_bidirectionally_for/3,
+           holds_over_chain/2,
+           equivalent_to_chain/2,
+           transitive_over/2,
+           metaproperty/2,
+           is_metadata_tag/1,
+           is_class_level/1,
+           is_transitive/1,
+           is_symmetric/1,
+           is_asymmetric/1,
+           is_reflexive/1,
+           is_anti_symmetric/1,
+           is_functional/1,
+           is_inverse_functional/1,
+           is_cyclic/1,
+           is_proper/1,
+           expand_expression_to/2,
+           expand_assertion_to/2,
+           transitive_form_of/2,
+           proper_form_of/2,
+           cyclic_form_of/2,
+           cyclic_over/2,
+           subclass_path/2,
+           subclass_path_length/2,
+           subclass_path_min_length/2,
+           subclass_path_max_length/2,
+           subclass_path_avg_length/2,
+           reflexive_over/2,
+           directed_simple_path_over/2,
+           directed_path_over/2,
+           id_axiom/2,
+           all_some/1,
+           all_some_relationship/3,
+           holds_for_all_times/1,
+	   property_relationship/3,
+           obsolete/3,
+           obsolete_class/2,
+           class_or_obsolete_class/1,
+           class_idspace/2,
+           idspace/2,
+           inst_of/2,
+           shared_class/3,
+           shared_class_nr/3,
+           inst_rel/3,
+           inst_rel/4,
+           inst_rel/5,
+           inst_rel/6,
+           inst_rel_anon/3,
+           inst_rel_type/3,
+           inst_sv/3,
+           inst_sv/4,
+           inst/1,
+           class_union_element/2,
+           class_intersection_element/2,
+           property_intersection_element/2,
+           property_intersection_elements/2,
+           property_union_element/2,
+           property_union_elements/2,
+           genus/2,
+           differentium/3,
+           class_comment/2,
+           def/2,
+           class_instrule/3,
+           class_reified_rulebody/3,
+           reification/2,
+           entailed_by/2,
+           entailed_by/3,
+           logicalformula/3,
+           treat_xrefs_as_equivalent/1,
+           treat_xrefs_as_subclass/1,
+           treat_xrefs_as_has_subclass/1,
+           treat_xrefs_as_genus_differentia/3,
+           treat_xrefs_as_reverse_genus_differentia/3,
+	   
+           % intensional predicates
+           class/2,
+           property/2,
+           inst/2,
+           referenced_id/2,
+           class_label/3,
+           class_label_exact/2,
+           topclass/1,
+           topclass/2,
+           noparent/1,
+           noparent/2,
+           nochild/1,
+           nochild/2,
+           subclassT/2,
+           subclassRT/2,
+           subclassX/2,
+           subclassXT/2,
+	   cdef_placement/5,
+           node_link/3,
+           parent_over/3,
+           parent_over/4,
+           parent_overT/3,
+           parent_overRT/3,
+           parent_over_nr/3,
+           parent_over_nr/4,
+           parent/2,
+           parent/3,
+           parentT/2,
+           parentT/3,
+           parentT/4,
+           parentRT/2,
+           parentRT/3,
+           parentRT/4,
+           ancestor_or_descendant_of/2,
+           inherited_relationship/3,
+           nr_inherited_relationship/3,
+	   idspace_references/2,
+	   idspace_references_reflexive/2,
+           idspace_mireot/2,
+           idspace_mireot/3,
+	   bf_parentRT/2,
+	   bf_set_parentRT/2,
+           combine_relation_pair/3,
+           inferred_parent/2,           
+           inferred_parent_via/3,
+           inferred_child_via/3,
+           inferred_parent_dist/3,
+           inferred_parent_dist_via/4,
+	   strict_subclass/2,
+	   cdef_label/2,
+           class_cdef/2,
+           class_cdef_skeleton/2,
+           cdef_skeleton/1,
+           
+           subclass_cycle/2,
+           parent_cycle/2,
+
+           ontol_subgraph/5,
+           
+           redundant_subclass/3,
+           redundant_parent/5,
+           subclass_underlap/3,
+
+           subclass_lca/2,
+           class_pair_subclass_lca/3,
+           
+           inst_ofRT/2,
+           inst_ofRT/3
+          ]).
+
+% metadata on the data predicates used in this module
+:- use_module(bio(dbmeta)).
+
+:- use_module(bio(metadata_db)).
+:- use_module(bio(bioprolog_util)).  % required for statistics
+:- use_module(bio(macros_transitive)).
+
+:- use_module(library(ordsets)).
+
+:- pure
+           class/2,
+           property/2,
+           slot/2,
+           inst/2,
+           referenced_id/2,
+           class_label/3,
+           class_label_exact/2,
+           topclass/1,
+           topclass/2,
+           noparent/1,
+           noparent/2,
+           nochild/1,
+           nochild/2,
+           subclassT/2,
+           subclassRT/2,
+           child/2,
+           child/3,
+           node_link/3,
+           parent_over/3,
+           parent_over/4,
+           parent_overT/3,
+           parent_overRT/3,
+           parent_over_nr/3,
+           parent_over_nr/4,
+           parent/2,
+           parent/3,
+           parentT/2,
+           parentT/3,
+           parentT/4,
+           parentRT/2,
+           parentRT/3,
+           parentRT/4,
+
+           cdef_label/2,
+           class_cdef/2,
+           
+           subclass_cycle/2,
+           parent_cycle/2,
+
+           abduced_link/1,
+           abduced_link_nr/1,
+           
+           redundant_subclass/3,
+           redundant_parent/5,
+           subclass_underlap/3,
+           multiple_parent/4,
+           multiple_parent/5,
+
+           subclass_lca/2,
+           class_pair_subclass_lca/3,
+           
+           % experimental
+
+           inst_ofRT/2,
+           inst_ofRT/3.
+
+
+% ----------------------------------------
+% ONTOLOGIES            
+% ----------------------------------------
+
+%%  ontology(?Ontology) is nondet.
+% e.g. ontology('GO')
+:- extensional(ontology/1).
+
+%%  ontology(?Ontology,?Name,?Desc) is nondet.
+% DEPRECATED
+:- extensional(ontology/3).
+
+%% ontology(?Ontology,?Name)
+% DEPRECATED
+% see ontology/3  
+ontology(ID,N):-
+        ontology(ID,N,_).
+ontology(ID,ID):-
+        not(var(ID)),
+        not(ontology(ID,_,_)).
+
+:- extensional(treat_xrefs_as_equivalent/1).
+:- extensional(treat_xrefs_as_subclass/1).
+:- extensional(treat_xrefs_as_has_subclass/1).
+:- extensional(treat_xrefs_as_genus_differentia/3).
+:- extensional(treat_xrefs_as_reverse_genus_differentia/3).
+
+:- extensional(import_directive/1).
+:- dynamic ontol_db:import_directive/1.
+:- dynamic already_imported/1.
+import_all_ontologies:-
+        findall(O,ontology(O),_), % hacky way to ensure ontology/1 is set
+        findall(X,import_directive(X),Xs),
+        import_ontologies(Xs,[]).
+        
+import_ontology(X):-
+        debug(ontol,'importing "~w"',[X]),
+        ensure_loaded(bio(io)),
+        % massive hack. TODO!! fix. rdf_load does not appear to accept this
+        (   sub_atom(X,_,_,0,'.obo')
+        ->  Fmt=obo
+        ;   Fmt=owl2obo),
+        debug(ontol,'fmt: ~w',[Fmt]),
+        (   sub_atom(X,0,_,_,'http:')
+        ->  io:load_biofile(Fmt,url(X))
+        ;   (   sub_atom(X,0,Pos,_,'file:')
+            ->  sub_atom(X,Pos,_,0,File),
+                io:load_biofile(Fmt,File)
+            ;   io:load_biofile(Fmt,X))),
+        assert(already_imported(X)).
+
+import_ontologies([],_).
+import_ontologies([File|Files],Parsed):-
+        (   member(File,Parsed)
+        ->  debug(ontol,'Already parsed ~w',[File])
+        ;   import_ontology(File)),
+        findall(X,(import_directive(X),\+member(X,Parsed)),Xs),
+        debug(ontol,'~w imports: ~w',[File,Xs]),
+        append(Xs,Files,Next),
+        import_ontologies(Next,[File|Parsed]).
+
+% ----------------------------------------
+% CLASSES
+% ----------------------------------------
+
+%%  class(?Class) is nondet.
+% class declaration - true if Class is a class
+:- extensional(class/1).
+
+%%  class(?Class,?Label) is nondet.
+%  combines class/1 and entity_label/2
+:- multifile class/2.
+class(C,Name):- entity_label(C,Name),class(C).
+
+class_id_or_label(ID,N):- (class(ID,N)-> true ; N=ID).
+
+
+%%  subclass(?Class,?SuperClass) is nondet.
+%    An asserted is_a (subtype, subsumption) relationship
+%    equivalent to owl:subClassOf
+%    transitive form is subclassT/2
+:- extensional(subclass/2).
+
+
+
+%%  equivalent_class(?Class1,?Class2) is nondet.
+%    corresponds to owl:equivalentClass
+:- extensional(equivalent_class/2).
+
+equivalent_class_symm(X,Y) :- equivalent_class(X,Y).
+equivalent_class_symm(X,Y) :- equivalent_class(Y,X).
+
+
+/*
+%% class_equivalence_set(?Class,?ClassSet)
+% true if Class is in ClassSet
+class_equivalence_set(C,S) :-
+        equivalent_class(C,_),
+	expand_equivset([C],[],[],S).
+	
+expand_equivset([ID|IDs],DoneIDs,Ancs,AncsFinal) :-
+	setof(XID,(equivalent_class(ID,XID),
+                   \+member(XID,IDs),
+                   \+member(XID,DoneIDs)),Parents),
+	!,
+	ord_union(Parents,IDs,NextIDs),
+	ord_union(Ancs,Parents,AncsNew),
+	expand_equivset(NextIDs,[ID|DoneIDs],AncsNew,AncsFinal).
+expand_equivset([ID|IDs],DoneIDs,Ancs,AncsFinal) :-
+	!,
+	expand_equivset(IDs,[ID|DoneIDs],Ancs,AncsFinal).
+expand_equivset([],_,Ancs,Ancs).
+*/
+
+
+
+%%  restriction(?Class,?Relation,?ToClass) is nondet.
+%  A relationship between two classes such that all instances of ?Class stand in ?Relation to some instance of ?ToClass
+:- extensional(restriction/3).
+%%  restriction(?Class,?Relation,?ToClass,?Arg3) is nondet.
+% ternary relations
+:- extensional(restriction/4).
+%%  restriction(?Class,?Relation,?ToClass,?Arg3,?Arg4) is nondet.
+% quaternary relations
+% @Deprecated
+:- extensional(restriction/5).
+
+:- extensional(gci_subclass/4).
+:- extensional(gci_restriction/5).
+
+
+%%  cardinality_restriction(?Class,?Relation,?Card,?ToClass) is nondet.
+%  A relationship between two classes such that all instances of ?Class stand in ?Relation to ?Card instance(s) of ?ToClass
+:- extensional(cardinality_restriction/4).
+
+%%  min_cardinality_restriction(?Class,?Relation,?Min_card,?ToClass) is nondet.
+%  A relationship between two classes such that all instances of ?Class stand in ?Relation to at least ?Min instance(s) of ?ToClass
+:- extensional(min_cardinality_restriction/4).
+
+%%  max_cardinality_restriction(?Class,?Relation,?Max_card,?ToClass) is nondet.
+%  A relationship between two classes such that all instances of ?Class stand in ?Relation to at most ?Max instance(s) of ?ToClass
+:- extensional(max_cardinality_restriction/4).
+
+%% range_cardinality_restriction(?A,?R,?Card,?B)
+range_cardinality_restriction(A,R,Card,B):-
+        cardinality_restriction(A,R,Card,B).
+range_cardinality_restriction(A,R,Min-Max,B):-
+        \+ cardinality_restriction(A,R,_,B),
+        (   min_cardinality_restriction(A,R,Min,B)
+        ->  true
+        ;   Min=1),
+        (   max_cardinality_restriction(A,R,Max,B)
+        ->  true
+        ;   Max=inf).
+
+        
+
+
+%% node_link(Node,Relation,Link) is nondet.
+% true if parent/3 or inst_rel/3
+% TODO: check semantics
+node_link(X,Y,Z):- parent(X,Y,Z).
+%node_link(X,Y,Z):- inst_rel(X,Y,Z). % now in parent/3
+%node_link(X,instance_of,Y):- inst_of(X,Y).
+%node_link(X,domain,Z):- property_domain(X,Z).
+%node_link(X,range,Z):- property_range(X,Z).
+
+
+%% parent(?Class,?SuperClass) is nondet.
+% as parent/3
+parent(ID,IDp):- parent(ID,_,IDp).
+
+%% parent(?Class,?Relation,?ParentClass) is nondet.
+%  combines subclass/2 and restriction/3
+%  also genus/2 differentia/3
+%  true if Relation=subclass and subclass(Class,ParentClass)
+%    or if restriction(?Class,?Relation,?ParentClass)
+parent(ID,subclass,IDp):-
+	subclass(ID,IDp).
+parent(ID,T,IDp):-
+	restriction(ID,T,IDp).
+parent(ID,T,IDp):-
+	inst_rel(ID,T,IDp),
+        \+ class(ID).
+parent(ID,instance_of,IDp):-
+	inst_of(ID,IDp).
+% treat genus/diff as normal links [depr: use entailment_basic instead]
+parent(ID,subclass,IDp):-
+	genus(ID,IDp).
+parent(ID,T,IDp):-
+	differentium(ID,T,IDp).
+parent(ID,subclass,IDp):-
+	property_intersection_element(ID,IDp).
+parent(ID,equivalent,IDp):-
+	equivalent_class(ID,IDp).
+
+
+%% parentT(?Class,?ParentClass) is nondet.
+% see parentT/3
+parentT(ID,IDp):- parentT(ID,_,IDp).
+
+%% parentT(?Class,?Relation,?ParentClass) is nondet.
+% transitive parent/3
+% new: now uses inferred_parent_via/3
+parentT(ID,R,PID):-
+        \+ ((   \+var(PID),
+                var(ID))),
+        inferred_parent_via_rev(ID,PID,[R]).
+parentT(ID,R,PID):-
+        \+ var(PID),
+        var(ID),
+        inferred_child_via_rev(PID,ID,[R]).
+
+%% parentT(?ID,+RelationList,?SuperClass,+ViaRelation) is nondet.
+% DEPRECATED? consider parent_overT/3
+% transitive parent relation via some relation
+parentT(ID,TL,IDp,Via):-
+        parentT1(ID,TL,IDp,Via),
+        % must have at least one non-subclass step
+        % is this useful?
+        % the case where the last step is Via is now
+        % covered by parent_overT
+        member(T,TL),
+        subclassRT(T,Via).
+
+% TODO: relation subtyping
+parentT1(ID,[T],IDp,Via):-
+        parent(ID,T,IDp,Via).
+parentT1(ID,[T|TL],IDp,Via):-
+        (var(ID)
+        ->  parent(IDz,T,IDp,Via),
+            parentT1(ID,TL,IDz,Via)
+        ;   parent(ID,T,IDz,Via),
+            parentT1(IDz,TL,IDp,Via)).
+
+% parentRT/4
+parentRT(ID,[],ID,_).
+parentRT(ID,TL,IDp,Via):- parentT(ID,TL,IDp,Via).
+
+%% parentRT(?Class,?Relation,?ParentClass) is nondet.
+% reflexive transitive parent/3
+parentRT(ID,R,ID) :- class(ID),is_reflexive(R).
+parentRT(ID,subclass,ID) :- class(ID). % subclass is reflexive
+parentRT(ID,TL,IDp):- parentT(ID,TL,IDp).
+
+%% parentRT(?Class,?ParentClass) is nondet.
+% reflexive transitive parent/2. See parentRT/3
+parentRT(ID,IDp):- parentRT(ID,_,IDp).
+
+ancestor_or_descendant_of(X,Y) :- parentT(X,Y).
+ancestor_or_descendant_of(X,Y) :- parentT(Y,X).
+
+inherited_relationship(X,R,Y) :- inherited_relationship(X,R,Y,[X]).
+inherited_relationship(X,R,Y,_) :- parent(X,R,Y),R\=subclass.
+inherited_relationship(X,R,Y,VL) :- subclass(X,X2),\+member(X2,VL),inherited_relationship(X2,R,Y,[X2|VL]).
+
+nr_inherited_relationship(X,R,Y) :- inherited_relationship(X,R,Y),
+        \+ ((inherited_relationship(X,R,Y2),
+             (   parentT(Y2,subclass,Y)
+             ;   parentT(Y2,R,Y)))).
+
+%%  belongs(?Entity,?Ontology) is nondet.
+%  true if Entity belongs to Ontology - equivalent to entity_resource/2
+%  may be deprecated in future - consider entity_resource/2
+:- multifile belongs/2.
+belongs(X,To):- entity_resource(X,To),is_class_or_property_or_inst(X).
+belongs(X,To):- entity_resource(X,To),entity_obsolete(X,_).
+
+%% is_class_or_property_or_inst(+E) is det.
+is_class_or_property_or_inst(X):- class(X),!.
+is_class_or_property_or_inst(X):- property(X),!.
+is_class_or_property_or_inst(X):- inst(X),!.
+
+class_or_obsolete_class(X) :- class(X).
+class_or_obsolete_class(X) :- entity_obsolete(X,class).
+
+
+
+%%  class_xref(?Class,?DBXref) is nondet.
+:- multifile class_xref/2.
+class_xref(Class,Xref):- entity_xref(Class,Xref),class(Class).
+
+%%  def_xref(?Class,?DBXref) is nondet.
+%   true if DBXRef is the source of the def/2 fact for Class
+%   this is currently not defined in terms of entity_xref/2
+:- extensional(def_xref/2).
+
+%%  class_comment(?Class,?Comment) is nondet.
+%  Combines class/1 and entity_comment/2
+%  holds when class(Class) and entity_comment(Class,Comment)
+:- multifile class_comment/2.
+class_comment(Class,Comment):- entity_comment(Class,Comment).  %,class(Class).
+
+
+%%  def(?Class,?DefinitionText) is nondet.
+%   true if DefinitionText is the natural language definition of Class or Relation
+%%  def(+Class,?DefinitionText) is semidet
+:- extensional(def/2).
+% consider: using entity_description/2?
+% consider: using entity_definition/2?
+
+%%  disjoint_from(?Class,?DisjointClass)
+%   true if there is nothing that instantiates both Class and DisjointClass
+:- extensional(disjoint_from/2).
+
+%%  disjoint_fromS(?Class,?DisjointClass)
+% infers symmetric relationships
+disjoint_fromS(X,Y) :- disjoint_from(X,Y).
+disjoint_fromS(X,Y) :- disjoint_from(Y,X).
+
+
+%%  genus(?Class,?Genus) is nondet.
+%    A logical definition of Class refines Genus
+%    via some discriminating characteristic (differentium/3);
+%    e.g. a Class is a Genus *which* Differentia hold
+:- extensional(genus/2).
+
+%%  differentium(?Class,?Rel,?ToClass) is nondet.
+%    Must be used in conjunction with genus/2
+:- extensional(differentium/3).
+
+%%  class_union_element(?Class,?Element) is nondet.
+%    for covering axioms. same as owl:unionOf
+:- extensional(class_union_element/2).
+
+%%  class_intersection_element(?Class,?Element) is nondet.
+%    for definitions. same as owl:intersectionOf
+:- extensional(class_intersection_element/2).
+
+%%  property_intersection_element(?Property,?Element) is nondet.
+%    we write the relation intersection p^q as two facts
+%      property_intersection_element('p^q',p).
+%      property_intersection_element('p^q',q).
+%    no equivalent in OWL or OWL2
+:- extensional(property_intersection_element/2).
+
+%% property_intersection_elements(?Property,?Elements) is semidet
+property_intersection_elements(R,L):- setof(X,property_intersection_element(R,X),L).
+
+%%  property_union_element(?Property,?Element) is nondet.
+%    we write the relation union p^q as two facts
+%      property_union_element('p^q',p).
+%      property_union_element('p^q',q).
+%    no equivalent in OWL or OWL2
+:- extensional(property_union_element/2).
+
+%% property_union_elements(?Property,?Elements) is semidet
+property_union_elements(R,L):- setof(X,property_union_element(R,X),L).
+
+
+% ----------------------------------------
+% RELATIONS
+% ----------------------------------------
+
+%% relation(?Rel)
+% deprecated: disjunction of property/1 and slot/1
+%  holds if Rel is a property or slot
+relation(X):- property(X).
+
+%%  property(?Relation) is nondet.
+%    holds when Relation is the ID of an entity which defines a relationship
+%    which holds between two classes (arg2 of restriction/3) or
+%    between two instance (arg2 of inst_rel/3)
+%    equivalent to owl:ObjectProperty
+:- extensional(property/1).
+
+%% property(?Relation,?Name) is nondet.
+%  combines property/1 and entity_label/2
+%  holds when property(?Relation) and entity_label(?Relation,?Name)
+%  see entity_label/2
+:- multifile property/2.
+property(P,Name):- entity_label(P,Name),property(P).
+
+%%  property_domain(?Relation,?Class) is nondet.
+% all instances that are the subject of Relation instantiate Class
+:- extensional(property_domain/2).
+
+%%  property_range(?Relation,?Class) is nondet.
+% all instances that are the object of Relation instantiate Class
+:- extensional(property_range/2).
+
+%% complement_of(?NegRel,?Rel)
+% EXPERIMENTAL
+:- extensional(complement_of/2).
+
+% DEPRECATED
+:- extensional(holds_temporally_between/3).
+:- extensional(holds_atemporally_between/3).
+
+%%  lexical_category(?Class,?Type) is nondet.
+% DEPRECATED
+:- extensional(lexical_category/2).
+
+%%  is_anonymous(?Entity) is nondet.
+% true if Entity is unnamed
+% equivalent to bNode in RDF
+:- extensional(is_anonymous/1).
+
+%%  is_unsatisfiable(?Class) is nondet.
+% true if Class is defined in such a way it can never be instantiated;
+% for example, being a subclass of two disjoint classes
+:- extensional(is_unsatisfiable/1).
+
+%%  inverse_of(?Relation,?Inverse) is nondet.
+% true if Inverse is the inverse of Relation, such that the inverse is held between instances
+% formally: inst_rel(X,R,Y),inverse(R,R1) => inst_rel(Y,R1,X)
+:- extensional(inverse_of/2).
+
+%%  inverse_of_on_instance_level(?Relation,?Inverse) is nondet.
+% true if all_some(Relation,InstRelation),inverse_of(InstRelation,InstRelationInv),all_some(InstRelationInv,Inverse)
+% (always asserted)
+% TODO: DEPRECATE? obof1.3, no longer valid in obof1.4
+:- extensional(inverse_of_on_instance_level/2).
+
+%%  class_level_inverse_of(?Relation,?Inverse) is nondet.
+% DEPRECATED: just use inverse_of
+% true if Inverse is the inverse of Relation, such that the inverse is held between classes
+% formally: restriction(X,R,Y),class_inverse(R,R1) => restriction(Y,R1,X)
+:- extensional(class_level_inverse_of/2).
+
+%%  holds_bidirectionally_for(?IntegralRelation,?Relation) is nondet.
+% holds_bidirectionally_for(SR,R), X SR Y, R inverse_of RI => X R Y and Y RI X
+% DEPRECATED. Use holds_bidirectionally_for/3
+:- extensional(holds_bidirectionally_for/2).
+
+%%  holds_bidirectionally_for(?IntegralRelation,?Relation,?InverseRelation) is nondet.
+% holds_bidirectionally_for(SR,R,Inv), X SR Y => X R Y and Y Inv X
+:- extensional(holds_bidirectionally_for/3).
+
+%%  is_metadata_tag(?Relation) is nondet.
+% does this relation only hold at the class metadata level?
+% same as owl:AnnotationProperty
+:- extensional(is_metadata_tag/1).
+
+%%  is_class_level(?Relation) is nondet.
+% Relation only holds between classes: also is non-inheritable
+:- extensional(is_class_level/1).
+
+%%  is_transitive(?Relation) is nondet.
+% formally: X R Y, Y R Z, is_transitive(R) => X R Z
+:- extensional(is_transitive/1).
+
+%% metaproperty(?Relation,?Property) is nondet
+% reified unary relation predicates.
+% @param Property one of is_transitive/1, is_symmetric/1, is_cyclic/1, is_asymmetric/1, is_anti_symmetric/1, is_functional/1, is_inverse_functional/1
+metaproperty(X,is_transitive):- is_transitive(X).
+metaproperty(X,is_symmetric):- is_symmetric(X).
+metaproperty(X,is_anti_symmetric):- is_anti_symmetric(X).
+metaproperty(X,is_functional):- is_functional(X).
+metaproperty(X,is_inverse_functional):- is_inverse_functional(X).
+metaproperty(X,is_cyclic):- is_cyclic(X).
+metaproperty(X,is_reflexive):- is_reflexive(X).
+
+
+%%  transitive_over(?Relation,?Over) is nondet.
+% true if Relation is transitive over Over
+% formally: X R Y, Y R1 Z, transitive_over(R,R1) => X R Z
+:- extensional(transitive_over/2).
+
+%%  holds_over_chain(?Relation,?RelationList) is nondet.
+% true if Relation is transitive over the chain of relations in RelationList
+% e.g. if holds_over_chain(R,[R1,R2, ..., Rn]) then
+% X R Y <= X R1 Z1, Z1 R2 Z2, ..., Zn-1 Rn Y
+:- extensional(holds_over_chain/2).
+
+%%  equivalent_to_chain(?Relation,?RelationList) is nondet.
+% true if Relation is equivalent the chain of relations in RelationList
+% e.g. if equivalent_to_chain(R,[R1,R2, ..., Rn]) then
+% X R Y <=> X R1 Z1, Z1 R2 Z2, ..., Zn-1 Rn Y
+:- extensional(equivalent_to_chain/2).
+
+%%  is_symmetric(?Relation) is semidet
+% class level. formally: X R Y,is_symmetric(R) => Y R X, X and Y are classes
+:- extensional(is_symmetric/1).
+
+%%  is_asymmetric(?Relation) is semidet
+:- extensional(is_asymmetric/1).
+
+%%  is_symmetric_on_instance_level(?Relation) is semindet
+% formally: X R Y,is_symmetric(R) => Y R X, X and Y are instances
+:- extensional(is_symmetric_on_instance_level/1).
+
+%%  is_reflexive(?Relation) is semidet
+% formally: forall(X), is_reflexive(R) => X R X
+:- extensional(is_reflexive/1).
+
+%%  is_anti_symmetric(?Relation) is semidet
+:- extensional(is_anti_symmetric/1).
+
+%%  is_cyclic(?Relation) is semidet
+:- extensional(is_cyclic/1).
+
+%%  is_functional(?Relation) is semidet
+:- extensional(is_functional/1).
+
+%%  is_inverse_functional(?Relation) is semidet
+:- extensional(is_inverse_functional/1).
+
+
+%%  is_proper(?Relation) is nondet.
+:- extensional(is_proper/1).
+
+%% expand_expression_to(?Rel,?ExprAtom)
+% OWL macros
+:- extensional(expand_expression_to/2).
+
+%% expand_assertion_to(?Rel,?ExprAtom)
+% OWL macros
+:- extensional(expand_assertion_to/2).
+
+
+
+%% transitive_form_of(?TransitiveRel,?Rel) is nondet
+% strictly required? We can make the Rel a subproperty of TransitiveRel instead, but this is less intuitive
+:- extensional(transitive_form_of/2).
+
+%% proper_form_of(?ProperRel,?Rel) is nondet
+:- extensional(proper_form_of/2).
+
+%% cyclic_form_of(?CyclicRel,?Rel) is nondet
+:- extensional(cyclic_form_of/2).
+
+%% cyclic_over(?CyclicRel,?Rel) is nondet
+:- extensional(cyclic_over/2).
+
+%% reflexive_over(?RRel,?Rel) is nondet
+:- extensional(reflexive_over/2).
+
+%% directed_simple_path_over(?CyclicRel,?Rel) is nondet
+:- extensional(directed_simple_path_over/2).
+
+%% directed_path_over(?CyclicRel,?Rel) is nondet
+:- extensional(directed_path_over/2).
+
+
+%%  id_axiom(?Relation,?Axiom) is nondet.
+% Axiom can be any term
+:- extensional(id_axiom/2).
+
+%%  all_some(?Relation) is nondet.
+% DEPRECATED: see below - but used in ontol_reasoner
+%:- extensional(all_some/1).
+all_some(Rel):- property_relationship(Rel,all_some,_).
+all_some(Rel):-                 % all_some by default
+        property(Rel),
+        \+ is_class_level(Rel),
+        \+ disjoint_over(Rel,_),
+        \+ is_metadata_tag(Rel),
+        \+ complement_of(Rel,_).
+all_some(Rel):-                 % all_some by default for undeclared
+        \+ var(Rel),
+        \+ property(Rel).
+
+
+all_some_relationship(C,R,P) :-
+        parent(C,R,P),
+        all_some(R).
+
+all_some_or_subclass_relationship(C,R,P) :- all_some_relationship(C,R,P).
+all_some_or_subclass_relationship(C,subclass,P) :- subclass(C,P).
+
+
+
+
+%% disjoint_over(?Rel,?RelOver)
+:- extensional(disjoint_over/2).
+
+%disjoint_over(Rel,Over):-
+%        property_relationship(Rel,disjoint_over,Over).
+
+%% property_relationship(?P,?Rel,?Filler) is notnet
+% @param ?Rel = all_some_all_times ; all_some_some_times ; all_some_tr
+:- extensional(property_relationship/3).
+
+%%  holds_for_all_times(?Relation) is nondet.
+:- extensional(holds_for_all_times/1).
+
+%%  obsolete(?Class,?Name,?Ontology) is nondet.
+% DEPRECATED: combines entity_label/2, entity_obsolete/1 and belongs/2
+:- multifile obsolete/3.
+obsolete(Class,Name,Ontology):- entity_label(Class,Name),entity_obsolete(Class,class),entity_resource(Class,Ontology).
+
+%%  obsolete_class(?Class,?Name) is nondet.
+% DEPRECATED combines entity_label/2, entity_obsolete/1
+:- multifile obsolete_class/2.
+obsolete_class(Class,Name):- entity_label(Class,Name),entity_obsolete(Class,class).
+
+%%  idspace(?IDSpace,?IDSpaceLong) is nondet.
+% DPRECATED: use idspace_uri/2 instead
+:- multifile idspace/2.
+idspace(S,URI):- metadata_db:idspace_uri(S,URI).
+
+% ----------------------------------------
+% INSTANCES
+% ----------------------------------------
+
+%%  inst(?Instance) is nondet.
+% true if Instance is declared to be an instance of some class
+:- extensional(inst/1).
+
+%% inst(?Instance,?Name) is nondet.
+%  combines inst/1 and entity_label/2
+%  holds when inst(?Instance) and entity_label(?Instance,?Name)
+:- multifile inst/2.
+inst(I,Name):- entity_label(I,Name),inst(I).
+
+%%  inst_of(?Instance,?Class) is nondet.
+% true if Instance is a direct instaniation of Class
+% - this represents a 'timeless' instantiation, such as
+%   set membership or owl/DL.
+%   See also inst_of/3 for time-indexed instantiation
+:- extensional(inst_of/2).
+
+
+
+%%  inst_ofRT(?Instance,?Class) is nondet.
+% true if Instance is an instance of Class, taking into account transitivity
+% combines inst_of/2 and subclassRT/2
+inst_ofRT(Inst,Class):-
+        subclassRT(SubClass,Class),
+        inst_of(Inst,SubClass).
+
+inst_ofRT(Inst,Rel,Class):-
+        inst_of(Inst,DirectClass),
+        parentT(DirectClass,Rel,Class).
+%inst_ofRT(Inst,Rel,Class):-
+%        inst(Inst),
+%        inferred_parent_via(Inst,Class,Chain),
+%        collapse_inst_chain(Chain,Rel).
+
+collapse_inst_chain([instance_of],subclass).
+collapse_inst_chain([instance_of,R],R).
+
+
+shared_class(I,J,C) :-
+        inst_of(I,A),
+        subclassRT(A,C),
+        inst_of(J,B),
+        subclassRT(B,C).
+
+shared_class_nr(I,J,C) :-
+        shared_class(I,J,C),
+        \+ ((subclassT(Z,C),
+             shared_class(I,J,Z)
+             )).
+
+
+%%  inst_rel(?Instance,?Relation,?ToInstance) is nondet.
+% true if Instance stands in Relation to ToInstance
+% - this represents a 'timeless' relationship
+%   See also inst_rel/4 to time-indexed relations
+:- extensional(inst_rel/3).
+
+% DEPRECATED - all relations are now binary
+:- extensional(inst_rel/4).
+:- extensional(inst_rel/5).
+:- extensional(inst_rel/6).
+:- extensional(inst_rel/7).
+
+%% inst_rel_type(?I,?Rel,?Type)
+% true if I is related by Rel to some instance of type Type
+inst_rel_type(I,Rel,Type):- inst_rel(I,Rel,I2),inst_of(I2,Type).
+
+%%  inst_rel_anon(?Instance,?Relation,?Class) is nondet.
+% true if Instance stands in Relation to some unnamed instance of Class
+:- extensional(inst_rel_anon/3).
+
+%%  inst_sv(?Instance,?Slot,?Value,?DataType) is nondet.
+% true if Instance has a Slot with Value, where Value is of DataType
+:- extensional(inst_sv/4).
+
+%% inst_sv(?Inst,?Relation,?Relatum) is nondet.
+%  disjunction of inst_sv/4 and inst_rel/3
+%  true if inst_sv(Inst,Relation,Reulatum) or inst_rel(Inst,Relation,Relatum)
+inst_sv(ID,S,V):-
+        inst_sv(ID,S,V,_).
+inst_sv(ID,S,PID):-
+        inst_rel(ID,S,PID).
+
+% ----------------------------------------
+% OTHER
+% ----------------------------------------
+
+%% class_instrule(?Class,?HeadVars,?PrologRuleBody)
+% Class(HeadVars) :- Body is a rule for instantiating Class
+:- extensional(class_instrule/3).
+
+%% class_reified_rulebody(?Class,HeadVars,?HeadConjTerms)
+% reified form of class_instrule/3
+:- extensional(class_reified_rulebody/3).
+
+
+%%  reification(?Statement,?Term) is nondet.
+%   true if Statement identifies the fact Term
+%   currently Term must be restriction/3 or inst_rel/3
+:- extensional(reification/2).
+
+%% entailed_by(?Statement,?Rule) is nondet.
+% true if Statement is entailed (logically inferred) by Rule
+% Expression may be 'true' if deduction provenance is not maintained.
+%
+% see ontol_reasoner.pro
+:- extensional(entailed_by/2).
+
+%% entailed_by(?Statement,?Rule,?Expression) is nondet.
+:- extensional(entailed_by/3).
+
+%% logicalformula(?ID,?FormulaAtom,?Language) is nondet.
+% DEPRECATED
+:- extensional(logicalformula/3).
+
+%% class_label(?Class,?Label,?Type)
+% true if Class has name or synonym Label (case-insensitive)
+%  Label='exact' for names and exact synonyms; otherwise synonym type
+% see class/2 and synonym/3
+class_label(ID,N,exact):-  class(ID,N).
+class_label(ID,N,T):-
+        entity_synonym_scope(ID,N,T1),  %downcase_atom(N1,N),
+        (   T1=''
+        ->  T=related
+        ;   T=T1).
+
+class_label_exact(ID,N):-  class_label(ID,N,exact).
+
+%% referenced_id(?ID,?RefID)
+%
+%  ID references RefID if RefID appears as object of
+%subclass/restriction/intersection relation
+referenced_id(ID,RefID):-     restriction(ID,_,RefID).
+referenced_id(ID,RefID):-     subclass(ID,RefID).
+referenced_id(ID,RefID):-     differentium(ID,_,RefID).
+referenced_id(ID,RefID):-     genus(ID,RefID).
+
+% ----------------------------------------
+% INTER-ONTOLOGY REFERENCES AND MIREOT
+% ----------------------------------------
+
+class_idspace(C,S) :- class(C),id_idspace(C,S).
+
+
+%% idspace_references(?S,?Ref)
+% true if Ref is in the parentRT/2 closure of a class
+% in idspace S.
+%
+% this predicate can be used for MIREOTing
+idspace_references(S,Ref) :-
+	setof(X,(class(X),
+		 id_idspace(X,S)),
+	      Xs),
+	member(X,Xs),
+	parentRT(X,Ref),
+	\+ id_idspace(Ref,S).
+
+%% idspace_references_reflexive(?S,?Ref)
+% as idspace_references/2, but includes all classes in S
+idspace_references_reflexive(S,Ref) :-
+	idspace_references(S,Ref).
+idspace_references_reflexive(S,Ref) :-
+	class(Ref),
+	id_idspace(Ref,S).
+
+%% idspace_mireot(+IDSpace,?RefEntity)
+% true if RefEntity is referenced directly or indirectly from an entity in IDSpace
+idspace_mireot(SX,Ref) :-
+        idspace_mireot(SX,Ref,_).
+
+%% idspace_mireot(+IDSpace,?RefEntity,+RefEntityIDSpace)
+%
+% idspace_mireot/2 with the additional constraint that directly referenced entities must come from RefEntityIDSpace.
+% if RefEntityIDSpace is var, then the constraint is that the directly referenced entity does not come from IDSpace.
+% TODO: change this?
+%
+idspace_mireot(SX,Ref,SRef) :-
+	solutions(Y,(class(X),
+                     id_idspace(X,SX),
+                     parent(X,Y),
+                     id_idspace(Y,SRef),
+                     SRef\=SX),
+                  Xs),
+	member(X,Xs),
+        inferred_parent(X,Ref), % no need to table
+        id_idspace(Ref,SRef),
+        SRef\=SX.
+
+
+idspace_mireot(SX,Ref,Ref) :-
+        class_or_obsolete_class(SX),
+        id_idspace(Ref).
+
+
+% ----------------------------------------
+% SIMPLE GRAPH CLOSURE
+% ----------------------------------------
+% uses breadth-first traversal, ignores relationship type
+
+%% bf_parentRT(?ID,?PID)
+% true if PID is reachable from ID via parent/2.
+%
+% use breadth-first traversal
+% cycle-safe
+bf_parentRT(ID,PID) :-
+	class(ID),
+	debug(bf_parentRT,'bf_parentRT(~w)',[ID]),
+	ids_ancestors([ID],[],[],L),
+	member(PID,L).
+bf_parentRT(ID,ID) :-
+	class(ID).
+bf_parentRT(L,PID) :-
+        nonvar(L),
+        is_list(L),
+	ids_ancestors(L,[],[],AL),
+        append(AL,L,AL_2),
+        sort(AL_2,AL_3),
+        member(PID,AL_3).
+
+        
+        
+
+ids_ancestors([ID|IDs],DoneIDs,Ancs,AncsFinal) :-
+	setof(XID,R^all_some_or_subclass_relationship(ID,R,XID),Parents),
+	!,
+	ord_union(Parents,IDs,U),
+	sort(DoneIDs,DoneIDsSorted),
+	ord_subtract(U,DoneIDsSorted,NextIDs),
+	ord_union(Ancs,Parents,AncsNew),
+	ids_ancestors(NextIDs,[ID|DoneIDsSorted],AncsNew,AncsFinal).
+ids_ancestors([ID|IDs],DoneIDs,Ancs,AncsFinal) :-
+	!,
+	ids_ancestors(IDs,[ID|DoneIDs],Ancs,AncsFinal).
+ids_ancestors([],_,Ancs,Ancs).
+
+%% bf_set_parentRT(IDs:list,PID)
+% as bf_parentRT/2, starting point is a list
+bf_set_parentRT(IDs,PID) :-
+	ids_ancestors(IDs,[],[],PIDs),
+	member(PID,PIDs).
+bf_set_parentRT(IDs,PID) :-
+	member(PID,IDs). % TODO - unique results only
+
+
+
+% ----------------------------------------
+% GRAPH INFERENCE
+% ----------------------------------------
+% relational path from a term to its ancestor
+
+%% inferred_parent(+EntityID,?InferredParentID) is nondet
+inferred_parent(ID,PID) :-
+        inferred_parent_via_rev(ID,PID,_).
+
+%% inferred_parent(+EntityID,?InferredParentID,?Over:list) is nondet
+inferred_parent_via(ID,PID,Over) :-
+        inferred_parent_via_rev(ID,PID,OverRev),
+        reverse(OverRev,Over).
+
+inferred_parent_via_rev(ID,PID,Over) :-
+        (   var(ID)
+        ->  class(ID)
+        ;   true),
+	entity_relations_closure([ID-[]],[],[],L),
+	member(PID-Over,L).
+
+%% inferred_child_via(+Entity,?InferredChild,?Over:list) is nondet
+% the chain:
+%  InferredChild r[1] r[2] ... r[n-1] r[n] Entity
+% must be true, where Over = [r[1], ..., r[n]]
+%
+% note that
+% ==
+% inferred_child_via(P,C,L) <==> inferred_parent_via(C,P,L)
+% ==
+% ie the list ordering is preserved, and corresponds to the
+% direction of all-some statements
+inferred_child_via(ID,CID,Over) :-
+        (   var(ID)
+        ->  class(ID)
+        ;   true),
+	entity_inverse_relations_closure([ID-[]],[],[],L),
+	member(CID-Over,L).
+
+%% inferred_child_via_rev(+Entity,?InferredChild,?Over:list) is nondet
+% the chain:
+%  InferredChild r[n] r[n-1] r[n-2] ... r[2] r[1] Entity
+% must be true, where Over = [r[1], ..., r[n]]
+% note that this means the list looks reversed when considering the all-some
+% path
+inferred_child_via_rev(ID,CID,Over) :-
+        inferred_child_via(ID,CID,OverRev),
+        reverse(OverRev,Over).
+
+
+%% visited_parent_via(+Parent,+NewConns:list,+Visited:list) is semidet
+% visit check: we want to avoid cycles. visiting the same node is
+% potentially fine as we want different paths through X,
+% e.g. A-po-X-df-B vs A-isa-X-df-B.  however, we need to avoid cycles
+% e.g. A r-s B, A r-s-r-s B, A r-s-r-s-r-s B
+visited_parent_via(Parent,NewConns,Visited) :-
+        ord_memberchk(Parent-NewConns,Visited),
+        %debug(parentT,'  visisted: ~w',[Parent-NewConns]),
+        !.
+% only check the first connection
+% (remember head of connection list is the one connecting to the parent)
+visited_parent_via(Parent,[Conn1,Conn2|_],Visited) :-
+        ord_memberchk(Parent-[Conn1,Conn2|_],Visited),
+        %debug(parentT,'  visisted: ~w // ~w',[Parent-Conn1-Conn2,Visited]),
+        !.
+
+%% entity_relations_closure(+ScheduledCCPairs,+Visited,+AccumulatedResults,?FinalResults)
+entity_relations_closure([Class-Conns|ScheduledCCPairs],Visited,ResultCCPairs,FinalCCPairs) :-
+        debug(parentT,'next: ~w',[Class-Conns]),
+        % extend to immediate parents
+	setof(Parent-NewConns,
+              (   entity_parent_chain(Class,Parent,Conns,NewConns),
+                  \+visited_parent_via(Parent,NewConns,Visited)),
+              NextCCPairs),
+	!,
+	ord_union(ResultCCPairs,NextCCPairs,ResultCCPairsNew),
+        ord_union(ScheduledCCPairs,NextCCPairs,NewScheduledCCPairs),
+	entity_relations_closure(NewScheduledCCPairs,[Class-Conns|Visited],ResultCCPairsNew,FinalCCPairs).
+entity_relations_closure([Class-Conns|ScheduledCCPairs],Visited,ResultCCPairs,FinalCCPairs) :-
+	!,
+        % Class has no parents
+	entity_relations_closure(ScheduledCCPairs,[Class-Conns|Visited],ResultCCPairs,FinalCCPairs).
+entity_relations_closure([],_,ResultCCPairs,ResultCCPairs).
+
+entity_parent_chain(Class,Parent,InConns,NewConns) :-
+        all_some_or_subclass_relationship(Class,ConnNext,Parent),
+        combine_relation_pairs(InConns,ConnNext,NewConns).
+
+entity_child_chain(Class,Child,InConns,NewConns) :-
+        all_some_or_subclass_relationship(Child,ConnNext,Class),
+        combine_relation_pairs_rev(InConns,ConnNext,NewConns).
+
+:- multifile block_chain_hook/2.
+% block_chain_hook(part_of,has_part).
+
+% note that connection list maintained in reverse order
+combine_relation_pairs([ConnPrev|_],ConnNext,_) :-
+        block_chain_hook(ConnPrev,ConnNext),
+        !,
+        fail.
+combine_relation_pairs([ConnPrev|InConns],ConnNext,NewConns) :-
+        combine_relation_pair(ConnPrev,ConnNext,NewConn),
+        !,
+        combine_relation_pairs(InConns,NewConn,NewConns).
+combine_relation_pairs(InConns,ConnNext,[ConnNext|InConns]). % top of stack
+
+combine_relation_pairs_rev([ConnPrev|_],ConnNext,_) :-
+        block_chain_hook(ConnNext,ConnPrev),
+        !,
+        fail.
+combine_relation_pairs_rev([ConnPrev|InConns],ConnNext,NewConns) :-
+        combine_relation_pair(ConnNext,ConnPrev,NewConn),
+        !,
+        combine_relation_pairs_rev(InConns,NewConn,NewConns).
+combine_relation_pairs_rev(InConns,ConnNext,[ConnNext|InConns]). % top of stack
+
+% composition table A B -> C
+combine_relation_pair(equivalent_to,R,R).
+combine_relation_pair(instance_of,subclass,instance_of).
+combine_relation_pair(subclass,subclass,subclass).
+combine_relation_pair(subclass,R,R) :- all_some(R).
+combine_relation_pair(R,subclass,R) :- all_some(R).
+combine_relation_pair(R,R,R) :- is_transitive(R).
+combine_relation_pair(R1,R2,R) :- subclassRT(R1,R),subclassRT(R2,R),R1-R2\=R-R,is_transitive(R).
+combine_relation_pair(R,Over,R) :- transitive_over(R,Over).
+combine_relation_pair(R1,R2,R) :- subclassRT(R1,R1p),subclassRT(R2,R2p),holds_over_chain(R,[R1p,R2p]). % TODO - check speed, apply to equiv chains
+combine_relation_pair(R1,R2,R) :- equivalent_to_chain(R,[R1,R2]).
+combine_relation_pair(R,R2,R) :- equivalent_to_chain(R,[_,R2]),is_transitive(R2).
+combine_relation_pair(R1,R,R) :- equivalent_to_chain(R,[R1,_]),is_transitive(R1).
+
+% same with distances
+
+inferred_parent_dist(ID,PID,Dist) :-
+        inferred_parent_dist_via_rev(ID,PID,Dist,_).
+
+%% inferred_parent_dist(+EntityID,?InferredParentID,?Dist,?Over) is nondet
+inferred_parent_dist_via(ID,PID,Dist,Over) :-
+        inferred_parent_dist_via_rev(ID,PID,Dist,OverRev),
+        reverse(OverRev,Over).
+
+inferred_parent_dist_via_rev(ID,PID,Dist,Over) :-
+        (   var(ID)
+        ->  class(ID)
+        ;   true),
+	entity_reldists_closure([ID-[]-0],[],[],L),
+	member(PID-Over-Dist,L).
+
+%% entity_reldists_closure(+ScheduledCCPairs,+Visited,+AccumulatedResults,?FinalResults)
+entity_reldists_closure([Class-Conns-CurDist|ScheduledCCPairs],Visited,ResultCCPairs,FinalCCPairs) :-
+        NextDist is CurDist+1,
+	setof(Parent-NewConns-NextDist,
+              (   entity_parent_chain(Class,Parent,Conns,NewConns),
+                  \+ord_memberchk(Parent-NewConns-NextDist,Visited)),
+              NextCCPairs),
+	!,
+	ord_union(ResultCCPairs,NextCCPairs,ResultCCPairsNew),
+        ord_union(ScheduledCCPairs,NextCCPairs,NewScheduledCCPairs),
+	entity_reldists_closure(NewScheduledCCPairs,[Class-Conns-NextDist|Visited],ResultCCPairsNew,FinalCCPairs).
+entity_reldists_closure([CCD|ScheduledCCPairs],Visited,ResultCCPairs,FinalCCPairs) :-
+	!,
+        % Class has no parents
+	entity_reldists_closure(ScheduledCCPairs,[CCD|Visited],ResultCCPairs,FinalCCPairs).
+entity_reldists_closure([],_,ResultCCPairs,ResultCCPairs).
+
+%% entity_inverse_relations_closure(+ScheduledCCPairs,+Visited,+AccumulatedResults,?FinalResults)
+entity_inverse_relations_closure([Class-Conns|ScheduledCCPairs],Visited,ResultCCPairs,FinalCCPairs) :-
+        debug(parentT,'next: ~w',[Class-Conns]),
+        % extend to immediate children
+	setof(Child-NewConns,
+              (   entity_child_chain(Class,Child,Conns,NewConns),
+                  \+member(Child,Visited)),
+              NextCCPairs),
+	!,
+	ord_union(ResultCCPairs,NextCCPairs,ResultCCPairsNew),
+        ord_union(ScheduledCCPairs,NextCCPairs,NewScheduledCCPairs),
+	entity_inverse_relations_closure(NewScheduledCCPairs,[Class|Visited],ResultCCPairsNew,FinalCCPairs).
+entity_inverse_relations_closure([Class-_Conns|ScheduledCCPairs],Visited,ResultCCPairs,FinalCCPairs) :-
+	!,
+        % Class has no childs
+	entity_inverse_relations_closure(ScheduledCCPairs,[Class|Visited],ResultCCPairs,FinalCCPairs).
+entity_inverse_relations_closure([],_,ResultCCPairs,ResultCCPairs).
+
+% -----------------------------------
+% SIMPLE MAPPING EVAL
+% -----------------------------------
+
+class_quad_diff(C1,P1,C2,P2) :-
+        class_quad_diff(C1,P1,C2,P2,_).
+class_quad_diff(C1,P1,C2,P2,S) :-
+        equiv_or_xref(C1,C2,S),
+        class(C2),
+        subclassT(C1,P1),
+        equiv_or_xref(P1,P2,S),
+        class(P2),
+        \+ subclassT(C2,P2).
+
+
+class_quad_flip(C1,P1,C2,P2) :-
+        class_quad_flip(C1,P1,C2,P2,_).
+class_quad_flip(C1,P1,C2,P2,S) :-
+        equiv_or_xref(C1,C2,S),
+        subclassT(C1,P1),
+        equiv_or_xref(P1,P2,S),
+        subclassT(P2,C2).
+
+class_quad_flipT(C1,P1,C2,P2) :-
+        class_quad_flipT(C1,P1,C2,P2,_).
+class_quad_flipT(C1,P1,C2,P2,S) :-
+        equiv_or_xref(C1,C2,S),
+        subclassT(C1,P1),
+        equiv_or_xref(P1,P2,S),
+        subclassRT(P2,C2).
+
+equiv_or_xref(X,Y,S) :- equiv_or_xref_1(X,Y,S).
+equiv_or_xref(X,Y,S) :- equiv_or_xref_1(Y,X,S).
+equiv_or_xref_1(X,Y,_) :- equivalent_class(X,Y).
+equiv_or_xref_1(X,Y,S) :- entity_xref_idspace(X,Y,S).
+
+
+        
+
+
+% -----------------------------------
+% BACKWARD CHAINING REASONING
+% -----------------------------------
+% non-cycle safe
+
+
+%%  subclassT(?Class,?SuperClass) is nondet.
+% transitive form of subclass/2.
+% may not be cycle-safe.
+%
+% see also: parentT/3
+subclassT(X,Y):- subclass(X,Y).
+subclassT(X,Y):- genus(X,Y).
+subclassT(X,Y):- subclass(X,Z),subclassT(Z,Y).
+
+%%  subclassRT(?Class,?SuperClass) is nondet
+% reflexive form of subclassT/2
+subclassRT(X,X).
+subclassRT(X,Y):- subclassT(X,Y).
+
+subclassU(X,Y) :- subclass(X,Y).
+subclassU(X,Y) :- class_union_element(Y,X).
+
+
+% -----------------------------------
+% FAST REASONING OVER DEFINITIONS
+% -----------------------------------
+
+%% subclassXT(?A,?B)
+% reflexive version of subclassX/2
+subclassXT(A,B) :-
+	subclassXT(A,B,[]).
+
+subclassXT(A,A,_).
+subclassXT(A,B,VL) :-
+	subclassX(A,B,VL).
+	
+
+%% subclassX(+A,+B)
+%
+% tests if A can be inferred to be a subclass of B
+%
+% if A and/or B are classes, will be translated into class expressions via class_cdef/2
+% (alternatively, class expressions can be used directly)
+%
+% this can be used to test quickly where a new class expression should be placed in
+% the ontology - given the ontology has all genus-differentia links already manifest
+%
+% e.g.
+% *  subclassX( cdef(vw,[col=red]), cdef(car,[color=primary]) )
+% *  subclassX( cdef(vw,[col=red]), bright_car ) where class_cdef(bright_car, ...)
+% *  subclassX( red_vw, cdef(car,[color=primary]) )
+% *  subclassX( red_vw, bright_car ) where class_cdef(bright_car, ...)
+%
+% to test 
+
+subclassX(A,B) :-
+	subclassX(A,B,[]).
+
+subclassX(A,B,VL) :-
+        %debug(subclassX,'testing subclass(~w,~w) visited: ~w',[A,B,VL]),
+	(   class_cdef(A,A1)
+	;   A1=A),
+	(   class_cdef(B,B1)
+	;   B1=B),
+	subclassX_2(A1,B1,VL).
+%subclassX(A,B,asserted) :-
+%	subclassT(A,B).
+
+	
+% N+S conditions, any < intersection
+subclassX_2(A,cdef(BG,BDs),VL) :-
+	subclassXT(A,BG,VL),
+	forall(member(BD,BDs),
+	       subclassXT(A,BD,VL)).
+% N+S conditions, class < rel-expr
+subclassX_2(A,BR=BV,VL) :-
+	class(A),
+	all_some_relationship(A,AR,AV),
+	\+ member(AV,VL),
+	subclassX_2(AR=AV,BR=BV,[AV|VL]).
+        %% parent_overT(R,A,V). -- TODO
+% N+S conditions, rel-expr < rel-expr
+subclassX_2(AR=AV,BR=BV,_) :-
+	subclassRT(AR,BR),
+	subclassRT(AV,BV).
+% AR=AV < BR=BV if (AR=AV < R=X < BR=BV)
+% e.g.
+% part_of(A) < part_of(C) if A<part_of(C)
+subclassX_2(R=X,TR=Y,VL) :-
+	is_transitive(TR),
+	subclassRT(R,TR),
+	subclassRT(X,X1),
+	\+ member(X1,VL),
+	subclassX_2(X1,TR=Y,[X1|VL]).
+% N+S conditions, intersection < rel-expr [genus test]
+subclassX_2(cdef(AG,_),R=V,VL) :-
+	subclassX_2(AG,R=V,VL).
+% N+S conditions, intersection < rel-expr [differentiae test]
+subclassX_2(cdef(_,ADs),BR=BV,VL) :-
+	member(AR=AV,ADs),
+	subclassX_2(AR=AV,BR=BV,VL).
+% N+S conditions, intersection < class
+subclassX_2(cdef(AG,_),B,_) :-
+	class(B),
+	subclassRT(AG,B).
+
+
+class_cdef_skeleton(ID,Rs) :-
+        setof(R,Z^differentium(ID,R,Z),Rs).
+
+cdef_skeleton(Sk) :-
+        setof(Sk,ID^class_cdef_skeleton(ID,Sk),Sks),
+        member(Sk,Sks).
+
+
+%% class_cdef(?C,?CDef) is nondet.
+% true if CDef is asserted to be equivalent to C
+% (e.g. via genus/2 and differentium/3)
+% CDef = cdef(Genus,Diffs)
+% Diffs = [R=To,...]
+class_cdef(ID,cdef(G,Diffs)):-
+        genus(ID,G),
+        setof(R=To,differentium(ID,R,To),Diffs). 
+
+%% cdef_placement(+CDef,?EquivClasses,?NRParents,?NRChildren,?RedundantSubClassPairs)
+cdef_placement(CDef,Equiv,NRParents,NRChildren,Redundant) :-
+        debug(cdef_placement,'finding parents of ~w',[CDef]),
+	solutions(Parent,(class_cdef(Parent,ParentCDef),
+                          subclassX(CDef,ParentCDef)),InferredParents),
+        (   InferredParents=[]
+        ->  CDef=cdef(Parent,_),
+            Parents=[Parent]    % default to genus
+        ;   Parents=InferredParents),
+        debug(cdef_placement,'finding equivs of ~w',[CDef]),
+	solutions(Parent,(member(Parent,Parents),subclassX(Parent,CDef)),Equiv),
+        debug(cdef_placement,'finding children of ~w',[CDef]),
+	solutions(Child,(class(Child),
+                         subclassX(Child,CDef)),Children),
+        debug(cdef_placement,'   children = ~w',[Children]),
+        debug(cdef_placement,'finding redundant subclass/2 facts introduced by ~w',[CDef]),
+	solutions(Child-Parent,(member(Parent,Parents),subclass(Child,Parent),member(Child,Children)),Redundant),
+	solutions(Parent,(member(Parent,Parents),\+((subclass(P2,Parent),member(P2,Parents)))),NRParents),
+	solutions(Child,(member(Child,Children),\+((subclass(Child,C2),member(C2,Children)))),NRChildren).
+
+
+%% cdef_label(+CDef,?Label)
+% generates a label from a cdef
+cdef_label(cdef(G,Diffs),Label):-
+        class_id_or_label(G,GN),
+        findall(DiffN,
+                (   member(R=To,Diffs),
+                    class_id_or_label(R,RN),
+                    class_id_or_label(To,ToN),
+                    sformat(DiffN,'~w ~w',[RN,ToN])),
+                DiffNs),
+        concat_atom(DiffNs,' and ',DiffAtom),
+        sformat(Chars,'~w that ~w',[GN,DiffAtom]),
+        atom_chars(Label,Chars).
+
+% ----------------------------------------
+% SUBGRAPHS
+% ----------------------------------------
+
+%% ontol_subgraph(+Input, +Rels:list, ?G, ?Roots:list, +Opts:list)
+%
+% Input = ClassList | KVList
+% G = [ChildParentPair1, ....]
+ontol_subgraph(Cs,Rels,G,Roots,Opts) :-
+        member(C,Cs),
+        C\=_-_,
+        !,
+        expand_subgraph_seeds(Cs,Cs2,Rels,Opts),
+        findall(1-C2,member(C2,Cs2),SCPs),
+        % note that the compact option only makes sense with counts
+        ontol_subgraph(SCPs,Rels,G,Roots,[compact(false)|Opts]).
+ontol_subgraph(SCPs,[],G,Roots,Opts) :-
+        !,
+        % match all relations
+        ontol_subgraph(SCPs,[_],G,Roots,Opts).
+ontol_subgraph(SCPs,Rels,G,Roots,Opts) :-
+        ontol_subgraph_closure(SCPs,Rels,G1,Cs,Opts),
+        debug(subgraph,'closure: ~w // seedset: ~w',[G1,Cs]),
+        remove_cycles(G1,G2,Opts),
+        reduce_graph(G2,G3,Opts),
+        debug(subgraph,'reduced [transitive reduction]: ~w',[G3]),
+        compact_graph(G3,G,SCPs,Cs,Cs2,Opts),
+        graph_roots(G,Cs2,Roots).
+
+expand_subgraph_seeds(Cs,Cs2,Rels,Opts) :-
+        option(expand_seeds(true),Opts),
+        !,
+        solutions(C2,(member(C,Cs),parentRT(C,R,C2),member(R,Rels)),Cs2).
+expand_subgraph_seeds(Cs,Cs,_,_).
+
+% transitive reduction
+%  input: transitive closure edges
+%  output: minimal graph
+reduce_graph(G,G2,_Opts) :-
+        findall(C-P,(member(C-P,G),
+                     \+ ((member(C-Z,G),
+                          member(Z-P,G)))),
+                G2).
+
+compact_graph(G,G,_,Cs,Cs,Opts) :-
+        option(compact(false),Opts),
+        !.
+compact_graph(G,G2,SCPs,InCs,OutCs,Opts) :-
+        compact_graph_r(G,G_next,SCPs,InCs,NextCs,Opts),
+        (   length(G,GLen),
+            length(G_next,GLen)
+        ->  G2=G_next,
+            OutCs=NextCs
+        ;   compact_graph(G_next,G2,SCPs,NextCs,OutCs,Opts)).
+
+compact_graph_r(G,G2,SCPs,InCs,OutCs,_Opts) :-
+        findall(C,(member(Num-C,SCPs),
+                   % has at least one child
+                   \+ \+ member(_-C,G),
+                   % counts for all children are identical
+                   forall(member(D-C,G),
+                          member(Num-D,SCPs))),
+                Cs),
+        findall(C,(member(C,InCs),\+member(C,Cs)),OutCs),
+        remove_nodes(Cs,G,G2).
+
+remove_nodes([],G,G_new) :-
+        % compacting may re-introduce redundancies
+        reduce_graph(G,G_r,[]),
+        sort(G_r,G_new).
+remove_nodes([C|Cs],G,G_new) :-
+        debug(subgraph,'Removing node ~w, because it is not compact (counts match)',[C]),
+        solutions(X-Y,(member(X-C,G),
+                       member(C-Y,G)),
+                  NewLinks),
+        findall(X-Y,(member(X-Y,G),
+                     X\=C,
+                     Y\=C),
+                FilteredLinks),
+        append(NewLinks,FilteredLinks,G2),
+        remove_nodes(Cs,G2,G_new).
+        
+        
+
+
+
+
+%% ontol_subgraph_closure(+SCPs:list, +Rels:list, ?Graph, ?Classes, +Opts:list)
+%
+% SCPs = [Count1-Class1, Count2-Class2, ...]
+ontol_subgraph_closure(SCPs,Rels,G,Cs,_Opts) :-
+        setof(C,S^(member(S-C,SCPs),
+                   S\=0 ),Cs),
+        solutions(C-P,(member(C,Cs),
+                       parentT(C,R,P),
+                       member(_Num-P,SCPs),
+                       member(R,Rels)),
+                  G).
+
+
+% note that the graph may have singletons
+graph_roots(G,Cs,Roots) :-
+        findall(C,(member(C,Cs),
+                   \+member(C-_,G)),
+                Roots).
+
+
+remove_cycles(G,G2,Opts) :-
+        option(cycles(equiv),Opts),
+        !,
+        findall(C-P,(member(C-P,G),
+                     \+member(P-C,G)),
+                Gx),
+        findall(C=P,(member(C-P,G),
+                     \+member(C-P,Gx)),
+                Gy),
+        append(Gx,Gy,G2).
+remove_cycles(G,G,Opts) :-
+        option(cycles(error),Opts),
+        !,
+        member(C-P,G),
+        member(P-C,G),
+        throw(error(cycle(C-P,in(G)))).
+remove_cycles(G,G2,_Opts) :-
+        findall(C-P,(member(C-P,G),
+                     \+member(P-C,G)),
+                G2).
+
+
+        
+% ----------------------------------------
+% UTIL
+% ----------------------------------------
+
+%% strict_subclass(?A,?B)
+% true if A is a subclass of B, and there is no Z
+% such that a is a subclass of Z.
+% this is always true of subclass/2 in a single-inheritance hierarchy
+strict_subclass(A,B) :-
+	subclass(A,B),
+	\+((subclass(A,Z),Z\=B)).
+
+% ----------------------------------------
+% DEPRECATED
+% ----------------------------------------
+
+%% parent_over(+R,?Class,?ParentClass) is nondet.
+% as parent_over/4
+% DEPRECATED
+parent_over(T,ID,PID):- parent_over(T,_,ID,PID).
+
+%% parent_over(+R,?Via,?Class,?ParentClass) is nondet.
+% true if ParentClass is a parent of Class by relation R
+% uses subclass/2 rules:
+%  X R Y if X subclassRT X1 and X1 R Y1 and Y1 subclassRT Y
+%
+%  notes: this will loop forever if there are subclass/2 cycles
+parent_over(RL,Via,ID,PID):- 
+        is_list(RL),
+        !,
+        member(R,RL),
+        parent_over(R,Via,ID,PID).
+parent_over(subclass,direct,ID,PID):- subclass(ID,PID).
+parent_over(R,Via,ID,PID):-
+        subclassRT(ID,XID),
+        restriction(XID,R,XID2),
+        all_some(R),
+        subclassRT(XID2,PID),
+        (   XID=ID
+        ->  Via=direct
+        ;   Via=subclassRT(XID)).
+parent_over(R,direct,ID,PID):-
+        restriction(ID,R,PID),
+        \+ all_some(R).
+parent_over(instance_of,direct,ID,PID):-
+        inst_of(ID,XID2),
+        subclassRT(XID2,PID).
+parent_over(R,direct,ID,PID):-
+        inst_rel(ID,R,PID).
+% transitive_over
+parent_over(R,Via,ID,PID):-
+        transitive_over(R,InhR),
+        parent_over(InhR,ID,XID), % changed from poT/3, too slow, required?
+        restriction(XID,R,PID),
+        Via=parent(InhR,XID).
+
+
+%% parent_overT(+R,?Class,?ParentClass) is nondet.
+% transitive closure over parent_over/3
+% DEPRECATED - this is now the same as parentT/3 and
+% inferred_parent_via/3 with chains of length=1
+parent_overT(R,ID,PID) :- inferred_parent_via_rev(ID,PID,[R]).
+
+%% parent_overT(+R,?Via,?Class,?ParentClass) is nondet.
+% DEPRECATED - this is now the same as inferred_parent_via/3
+parent_overT(R,ID,PID,[R|Path]) :-
+        inferred_parent_via(ID,PID,[R|Path]).
+
+
+
+%% parent_overT(+R,?Via,?Class,?ParentClass) is nondet.
+% reflexive transitive closure over parent_over/4
+parent_overRT(_,ID,ID).
+parent_overRT(T,ID,PID):- parent_overT(T,ID,PID).
+
+%% parent_over_nr(+R,?ID,?PID) is nondet.
+% as parent_over_nr/4
+parent_over_nr(R,ID,PID):- parent_over_nr(R,_,ID,PID).
+
+%% parent_over_nr(+R,?Via,?ID,?PID) is nondet.
+% nonredundant version of parent_over/4
+%
+%  eliminates redundancy; for example, if X part_of organelle, and
+%nucleus is_a+ organelle, and X can be inferred to be part_of a
+%nucleus, then X part_of organelle is redundant
+%
+% ==
+%  X --[p]--> nucleus --[is_a]--> organelle
+%  |                                  ^
+%  |                                  |
+%  +----------[p]---------------------+
+% ==
+% DEPRECATED
+% now operates as parent/3
+parent_over_nr(R,direct,ID,PID):-
+        parent(ID,R,PID).
+
+% ----------------------------------------
+% DISJOINT REASONING
+% ----------------------------------------
+
+%%  class_disjoint_union_list(?Class,?JEPDClassList) is nondet.
+% inferred from disjoint_from/2 and class_union_element/2
+class_disjoint_union_list(Class,Us):-
+        setof(U,class_union_element(Class,U),Us),
+        forall(member(C1,Us),
+               forall((member(C2,Us),C1\=C2),
+                      disjoint_from(C1,C2))).
+
+%% disjoint_from_violation(?P1,?P2,?C)
+% true if disjoint_from/2 holds between P1 and P2,
+% and C is a subclass/2 of both
+disjoint_from_violation(P1,P2,C):-
+        disjoint_from(P1,P2),
+        debug(disjoint,'Checking: ~w ^ ~w = {}',[P1,P2]),
+        subclassT(C,P1),
+        subclassT(C,P2).
+
+%% disjoint_from_violation_nr(?P1,?P2,?C)
+% non-redundant version of disjoint_from_violation/3
+disjoint_from_violation_nr(P1,P2,C):-
+        disjoint_from_violation(P1,P2,C),
+        \+ ((subclassT(C,C2),
+             disjoint_from_violation(P1,P2,C2))).
+
+
+%% disjoint_over_violation(?DR,?X,?Y,?A)
+% true if X is declared to be disjoint with Y over some relation R,
+% and there is some A that stands in relation R to X and Y
+disjoint_over_violation(DR,X,Y,A):-
+        disjoint_over(DR,R),	% e.g. disjoint_over(disconnected_from,part_of)
+        (   restriction(X,DR,Y)
+        ;   restriction(Y,DR,X)),
+        debug(ontol,'testing disjoint_over ~w :: ~w ~w ~w',[R,X,DR,Y]),
+        parentRT_or_self(A,R,X),
+        parentRT_or_self(A,R,Y).
+
+parentRT_or_self(A,R,X) :- parentRT(A,R,X).
+parentRT_or_self(A,R,A) :- property(R).
+
+
+
+% -----------------------------------
+% BASIC REASONING
+% -----------------------------------
+% these parts do not rely on classdefs;
+% simple querying based purely on subclass/2 and restriction/3
+
+%% topclass(?Class) is nondet.
+%  true if Class is top of subclass hierarchy
+topclass(C):-
+	class(C),
+        \+subclass(C,_).
+
+%% topclass(?Class,?Ontology)
+% true if Class is top of subclass hierarchy within Ontology
+topclass(C,O):-
+        belongs(C,O),
+	\+ (subclass(C,PID),belongs(PID,O)).
+
+%% noparent(?Class)
+% true if Class is top of union of subclass and restriction hierarchy
+noparent(C):-
+	class(C),
+        \+ ((parent(C,P),class(P))).
+
+
+%% noparent(?Class,?Ontology)
+% true if Class is top of union of subclass and restriction hierarchy within Ontology
+noparent(C,O):-
+        belongs(C,O),
+        \+((parent(C,PID),belongs(PID,O))).
+
+%% nochild(?Class)
+% true if Class is bottom of union of subclass and restriction hierarchy
+nochild(C):-
+	class(C),
+	\+(parent(_,C)).
+
+%% nochild(?Class,?Ontology)
+% true if Class is bottom of union of subclass and restriction hierarchy within Ontologyy
+nochild(C,O):-
+        belongs(C,O),
+	\+((parent(CID,C),belongs(CID,O))).
+
+%% redundant_subclass(?Class,?Parent,?Intermediate) is nondet.
+%  true if Class is direct subclass/2 of Parent, and Class is a subclassT/2 of Intermediate which is a subclassT/2 of Parent
+redundant_subclass(ID,IDp,IDz):-
+        class(ID),
+        \+ subclass_cycle(ID,_),
+	subclass(ID,IDp),
+	subclassT(ID,IDz),
+	subclassT(IDz,IDp).
+
+%% redundant_parent(?ID,?RelationshipType,?IDp,?IDz,?Path) is nondet.
+redundant_parent(ID,T,PID,ZID,TL):-
+        \+ parent_cycle(ID,_),
+        restriction(ID,T,PID),
+        subclassT(ID,ZID),
+        parentT(ZID,TL,PID,T).
+
+
+%% subclass_underlap(?C,?P1,?P2) is nondet.
+% C is_a P1 and C is_a P2
+% P1 and P2 are non-disjoint because o C
+subclass_underlap(C,P1,P2):-
+        subclassT(C,P1),
+        subclassT(C,P2),
+        P1\=P2.
+
+% ----------------------------------------
+% CYCLE CHECKS
+% ----------------------------------------
+
+%% subclass_cycle(+ID,?Path) is nondet.
+%  check for cyclical paths, going up from ID
+% 
+% subclass cycles are always illegal, and will cause
+% non-terminating behaviour
+subclass_cycle(ID,P):-
+	subclass_cycle(ID,P,[ID]).
+
+%% subclass_cycle(+ID,?Path,+InitPath) is nondet.
+subclass_cycle(ID,PathWithCycle,P):-
+	subclass(ID,SuperID),
+	(   member(SuperID,P)
+        ->  PathWithCycle=[SuperID|P]
+        ;   subclass_cycle(SuperID,PathWithCycle,[SuperID|P])).
+
+subclass_path(C,[C]) :-
+        \+ subclass(C,_).
+subclass_path(C,[C|Path]) :-
+        subclass(C,D),
+        subclass_path(D,Path).
+
+subclass_path_length(C,Len) :-
+        subclass_path(C,Path),
+        length(Path,Len).
+subclass_path_min_length(C,AggLen) :-
+        aggregate(min(Len),Len,subclass_path_length(C,Len),AggLen).
+subclass_path_max_length(C,AggLen) :-
+        aggregate(max(Len),Len,subclass_path_length(C,Len),AggLen).
+subclass_path_avg_length(C,AggLen) :-
+        aggregate(avg(Len),Len,subclass_path_length(C,Len),AggLen).
+
+
+
+%% parent_cycle(+ID,?Path) is nondet.
+%  check for cyclical paths, going up from ID
+% a parent is defined by subclass/2 or restriction/3
+% 
+% parent cycles will cause non-terminating behavior
+% example: parent_cycle(X,Y1),!,reverse(Y1,Y),writeln(Y),member(A-R-B,Y),class(A,AN),class(B,BN),writeln(A-AN-R-B-BN),fail.
+parent_cycle(ID,P):-
+	parent_cycle(ID,P,[]).
+
+%% parent_cycle(+ID,?Path,+InitPath) is nondet.
+parent_cycle(ID,[SuperID-R2-S2,ID-R-SuperID|P1],P):-
+	parent(ID,R,SuperID),
+	member(SuperID-_-_,P),!,
+        append(P1,[SuperID-R2-S2|_],P).
+
+parent_cycle(ID,X,P):-
+	parent(ID,R,SuperID),
+	parent_cycle(SuperID,X,[ID-R-SuperID|P]).
+
+
+% -----------------------------------
+% LCA
+% -----------------------------------
+
+%% subclass_lca(+IDs:list,?LCA) is semidet
+subclass_lca(IDs,A):-
+        IDs=[ID|IDs2],
+        setof(A,subclassRT(ID,A),As1),
+        findall(A,(member(A,As1),
+                   \+ ((member(ID2,IDs2),
+                        \+ subclassRT(ID2,A)))),
+                As),
+        select(A,As,As2),
+        \+ ((member(A2,As2),
+             subclassT(A2,A))).
+
+%% class_pair_subclass_lca(+X,+Y,?LCA)
+% true if LCA is a common ancestor of X and Y by subclassRT/2,
+% and if there exists no other more recent CA
+class_pair_subclass_lca(X,Y,LCA):-
+        subclassRT(X,LCA),
+        subclassRT(Y,LCA),
+        \+ (( subclassRT(X,CA),
+              subclassRT(Y,CA),
+              subclassT(CA,LCA))).
+
+:- multifile dbmeta:fact_chain_hook/2.
+dbmeta:fact_chain_hook(class(C),
+	   [subclass(C,_),
+	    restriction(C,_,_),
+	    genus(C,_),
+	    differentium(C,_,_),
+	    metadata_db:entity_label(C,_),
+	    metadata_db:entity_resource(C,_),
+	    metadata_db:entity_partition(C,_)
+	    ]).
+
+% -----------------------------------
+% STATS GENERATION
+% -----------------------------------
+
+:- multifile dbmeta:schema_statistic/2.
+
+dbmeta:schema_statistic(ontol_db,count(classes,Num)):-
+        setof_count(C,class(C),Num).
+dbmeta:schema_statistic(ontol_db,count(instances,Num)):-
+        setof_count(C,inst_of(C,_),Num).
+dbmeta:schema_statistic(ontol_db,count(ontologies,Num)):-
+        setof_count(O,belongs(_,O),Num).
+dbmeta:schema_statistic(ontol_db,count_by(classes_by_ontology,Num)):-
+        count_by(O,belongs(_C,O),Num).
+
+
+/** <module> ontology classes and instances
+
+  ---+ Synopsis
+  
+  ==
+  :- use_module(bio(ontol_db)).
+  :- use_module(bio(io)).
+
+  % find all superclasses of a particular class
+  demo:-
+    load_bioresource(go),
+    class(ID,'transcription factor activity'),
+    setof(Parent,subclassRT(ID,Parent),Parents),
+    writeln(parents=Parents).    
+  ==
+
+  
+  ---+ Package
+
+  This module is part of the blipkit ontol package. See
+  README.txt
+  
+  ---+ Description
+
+  This module contains defines extensional and intensional data
+predicates that model ontology and instance data. The data model is
+obo-like, and can easily be mapped to an OWL ontology (see bridge)
+
+  The basic querying is such things as transitive relationships and
+  detecting illegal cycles or redundant relationships. It requires
+  ontology prolog fact files containing at least the following facts:
+
+    * class/2
+    * belongs/2
+    * subclass/2
+    * restriction/3
+  
+  Any cycles over subclass/2 or restriction/3 will cause
+  non-terminating behavior
+
+  ---++ Importing and exporting data
+
+  This is a data module. Facts can be imported and exported from both
+prolog fact databases and other formats
+  
+  ---+++ Import
+
+  The following file formats can be read in using load_biofile/2
+and load_bioresource/1
+  
+  * obo
+  * obo_xml
+  * go
+  * owl
+
+  (See below for full details)
+  
+  The following database schemas have adapters:
+  
+  * gosql
+  
+  ---+++ Export
+
+  The following file formats can be written using write_biofile/2
+
+  
+  * OWL - (ensure_loaded ontol_bridge_to_owl)
+  
+
+  ---+++ Obo-format files
+
+  This is a format commonly used for bio-ontologies
+  See <http://www.geneontology.org> GO
+
+  Blip contains an experimental pure-prolog parser (see
+parser_obo), which can be invoked by using the file format atom
+'obo_native'. For now the default is to invoke the go-perl go2prolog
+script which generates prolog fact files. This should all happen
+behind the scenes, just specifify the file format 'obo'
+  
+  ---+++ The ontol module and RDF/OWL
+
+  The data predicates defined in this module map fairly well to
+OWL. As well as loading the data predicates directly from an
+OBO-formatted file (as is common in the bio-ontologies world), the
+data predicates can map to predicates defined in the SWI-Prolog rdb_db
+module - see
+<ontol_bridge_from_owl.html> ontol_bridge_from_owl
+
+  ---+++ Instance data
+
+  As well as modeling ontologies consisting purely of class data, this
+module also handles instance data. A generic free model is used to
+store instances, similar to most frame-based systems, RDF and OWL. In
+principle, any kind of data can be modeled as instances belong to a
+particular class. This means that the ontol module can provide an
+object system for modeling data. See inst/2, inst_rel/3 and
+inst_sv/4 for details
+
+  ---++ Predicate naming conventions
+
+  Typically the modes of the inference predicates are defined such
+  that parents are infered from children, rather than vice versa
+
+  
+    * T - transitive
+    * R - reflexive (includes self)
+    * RT - reflexive transitive
+    * N - uses names rather than IDs to refer to classes
+
+  ---+ Additional Information
+
+  This module is part of blip. For more details, see http://www.blipkit.org
+
+  ---+ See Also
+
+  Thea
+
+*/

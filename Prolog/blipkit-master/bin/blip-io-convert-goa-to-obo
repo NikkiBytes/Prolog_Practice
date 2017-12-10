@@ -1,0 +1,3 @@
+#!/bin/sh
+
+blip io-convert -f go_assoc -u seqfeature_bridge_to_class -to curation_obo "$@"

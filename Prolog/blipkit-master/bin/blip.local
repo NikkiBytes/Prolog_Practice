@@ -1,0 +1,4 @@
+#!/bin/sh
+PATH_TO_ME=`dirname $0`;
+export BLIP_CONFIG="bioconf-cgi"
+$PATH_TO_ME/blip "$@"
