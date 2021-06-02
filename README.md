@@ -1,1 +1,1 @@
-# Prolog_Practice-
+# Prolog_Practice
